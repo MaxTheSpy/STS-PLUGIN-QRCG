@@ -75,7 +75,9 @@ class QRCodeApp(QtWidgets.QWidget):
             QtWidgets.QMessageBox.critical(self, "Save Error", f"Failed to save QR Code: {str(e)}")
 
     def display_qr_code(self, filename):
+        box_size = int(self.lineEdit_box_size.text())
         pixmap = QPixmap(filename)
+        pixmap.scaled(box_size, box_size)
         self.label_qr_display.setPixmap(pixmap)
 
     def save_qr_code(self):
