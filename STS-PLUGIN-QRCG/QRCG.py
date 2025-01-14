@@ -1,6 +1,5 @@
 import warnings # Remove this later
 import os
-import sys
 import tempfile
 import qrcode
 from PyQt5 import QtWidgets, uic
@@ -11,10 +10,17 @@ warnings.simplefilter("ignore", category=DeprecationWarning)  # Remove this late
 # https://pypi.org/project/qrcode/
 
 class QRCodeApp(QtWidgets.QWidget):
-    def __init__(self):
-        super().__init__()
-        uic.loadUi("QRCG.ui", self)
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        ui_path = os.path.join(current_dir, "QRCG.ui")
+        if os.path.exists(ui_path):
+            uic.loadUi(ui_path, self)
+        else:
+            raise FileNotFoundError(f"UI file not found: {ui_path}")
+        self.setup_ui()
 
+    def setup_ui(self):
         # Connect UI elements
         self.lineEdit_qr_data = self.findChild(QtWidgets.QLineEdit, "lineEdit_qr_data")
         self.sel_qr_version = self.findChild(QtWidgets.QComboBox, "sel_qr_version")
@@ -33,22 +39,22 @@ class QRCodeApp(QtWidgets.QWidget):
         self.temp_file = None
 
     def generate_qr_code(self):
-        # Get data from input fields
         qr_data = self.lineEdit_qr_data.text()
         qr_version = self.sel_qr_version.currentText()
         err_correction = self.sel_qr_err.currentText()
+
         if not qr_data:
             QtWidgets.QMessageBox.warning(self, "Input Error", "QR Data is required!")
             return
 
-        err_correction_map = { # Error Correction choices
+        err_correction_map = {
             "Level L  (Approx 7%)": qrcode.constants.ERROR_CORRECT_L,
             "Level M (Approx 15%)": qrcode.constants.ERROR_CORRECT_M,
             "Level Q (Approx 25%)": qrcode.constants.ERROR_CORRECT_Q,
             "Level H (Approx(30%)": qrcode.constants.ERROR_CORRECT_H,
         }
         err_correction_level = err_correction_map.get(err_correction, qrcode.constants.ERROR_CORRECT_L)
-        
+
         try:
             box_size = int(self.lineEdit_box_size.text())
             border_size = int(self.lineEdit_border_size.text())
@@ -56,7 +62,6 @@ class QRCodeApp(QtWidgets.QWidget):
             QtWidgets.QMessageBox.warning(self, "Input Error", "Box size and border size must be integers!")
             return
 
-        # QR code creator
         qr = qrcode.QRCode(
             version=int(qr_version),
             error_correction=err_correction_level,
@@ -75,9 +80,7 @@ class QRCodeApp(QtWidgets.QWidget):
             QtWidgets.QMessageBox.critical(self, "Save Error", f"Failed to save QR Code: {str(e)}")
 
     def display_qr_code(self, filename):
-        box_size = int(self.lineEdit_box_size.text())
         pixmap = QPixmap(filename)
-        pixmap.scaled(box_size, box_size)
         self.label_qr_display.setPixmap(pixmap)
 
     def save_qr_code(self):
@@ -97,8 +100,5 @@ class QRCodeApp(QtWidgets.QWidget):
         event.accept()
 
 
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    window = QRCodeApp()
-    window.show()
-    sys.exit(app.exec_())
+def main(parent_widget):               #Entry Point
+    return QRCodeApp(parent_widget)

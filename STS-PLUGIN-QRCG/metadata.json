@@ -1,7 +1,7 @@
 {
   "name": "QR Code Generator",
   "alias": "QRCG",
-  "version": "0.1a",
+  "version": "0.0.1-b",
   "author": "MaxTheSpy",
   "description": "Generates a QR code from a given string.",
   "main": "QRCG.py",
